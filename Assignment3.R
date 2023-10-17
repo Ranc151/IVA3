@@ -90,6 +90,21 @@ ui <- navbarPage(
             center: [144.9631, -37.8136], 
             zoom: 10
           });
+          map.on('click', (event) => {
+          const features = map.queryRenderedFeatures(event.point, {
+            layers: ['bus-stops-d5w82d']
+          });
+          if (!features.length) {
+            return;
+          }
+          const feature = features[0];
+          const popup = new mapboxgl.Popup({ offset: [0, -15] })
+          .setLngLat(feature.geometry.coordinates)
+          .setHTML(
+          `<h3>${feature.properties.title}</h3><p>${feature.properties.description}</p>`
+          )
+          .addTo(map);
+          });
         "))
       )
     )
@@ -133,3 +148,33 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server,options = list(launch.browser=TRUE))
+
+
+
+[
+  {
+    "id": "bus-stops-d5w82d",
+    "type": "symbol",
+    "paint": {},
+    "layout": {
+      "icon-image": "bus",
+      "icon-size": 0.8
+    },
+    "source": "composite",
+    "source-layer": "bus-stops-d5w82d"
+  }
+]
+
+[
+  {
+    "id": "city-circle-tram-stops-9r4r64",
+    "type": "symbol",
+    "paint": {},
+    "layout": {
+      "icon-image": "rail",
+      "icon-size": 0.8
+    },
+    "source": "composite",
+    "source-layer": "city-circle-tram-stops-9r4r64"
+  }
+]
