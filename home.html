@@ -1,0 +1,112 @@
+<style>
+    #home {
+        margin: 0;
+        padding-top: 50px;
+        width: auto;
+        height: 100vh;
+        background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(./background.png);
+        background-size: cover;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #header {
+        animation-name: animate__lightSpeedInLeft;
+        animation-duration: 2s;
+        text-align: center;
+        font: 3.5em sans-serif;
+        color: aliceblue;
+    }
+
+    #home p {
+        padding: 2vh;
+        font: 1em;
+        color: azure;
+        text-align: center;
+    }
+
+    .tab-button {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-gap: 20px;
+    }
+
+    .tab-button i {
+        padding: 3px;
+    }
+
+    .tab-button button {
+        height: 5vh;
+        text-align: center;
+        background: linear-gradient(to right, #cde6f1, #f0d8e6, #f5efbf, #95d9f9);
+        background-size: 400%;
+        border-radius: 10px;
+        border: none;
+        outline: none;
+        z-index: 1;
+        padding: 0;
+    }
+
+    .tab-button button::before {
+        text-align: center;
+        background: linear-gradient(to right, #03a9f4, #f441a5, #ffeb3b, #09a8f4);
+        background-size: 400%;
+        border-radius: 10px;
+        z-index: -1;
+        filter: blur(20px);
+    }
+
+    .tab-button button:hover {
+        animation: streamer 4s infinite;
+    }
+
+    .tab-button button:hover::before {
+        animation: streamer 8s infinite;
+    }
+
+    @keyframes streamer {
+        100% {
+            background-position: -400% 0;
+        }
+    }
+
+    @keyframes animate__lightSpeedInLeft {
+        0% {
+            transform: translate3d(-100%, 0, 0) skewX(-30deg);
+            opacity: 0;
+        }
+
+        60% {
+            transform: skewX(20deg);
+            opacity: 1;
+        }
+
+        80% {
+            transform: skewX(-5deg);
+            opacity: 1;
+        }
+
+        100% {
+            transform: none;
+            opacity: 1;
+        }
+    }
+</style>
+
+<div id="home">
+    <header>
+        <h1 id="header">MELBOURNE TOUR MAP</h1>
+        <p>
+            Welcome to Melbourne Tour Map.
+        </p>
+        <div class="tab-button">
+            <button id="mapIcon" onclick="$('li:eq(2) a').tab('show');" role="button"><i class="fa-solid fa-map"
+                    style="color: #07ab0a;"></i>Explore Melbourne Map</button>
+            <button id="chartIcon" onclick="$('li:eq(3) a').tab('show');"><i class="fa-solid fa-chart-simple"
+                    style="color: #c963ee;"></i>Analyse Data</button>
+        </div>
+    </header>
+</div>

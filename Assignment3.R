@@ -4,7 +4,10 @@ library(jsonlite)
 library(httr)
 library(mapboxer)
 library(mapboxapi)
-source('tableau-in-shiny-v1.0.R')
+library(shinyBS)
+library(shinyjs)
+library(shinydashboard)
+source("tableau-in-shiny-v1.0.R")
 
 weather_API <- "b013907dbac70d244667999a00a73f26"
 mapbox_token <- "pk.eyJ1Ijoia3Vkb3VyYW4iLCJhIjoiY2xuZ3h0ZWtkMGE1dTJycGY1aDIyaXhybSJ9.eySchTKDLLD44tuXIISWSQ"
@@ -27,11 +30,21 @@ getWeatherData <- function() {
 }
 
 ui <- navbarPage(
-  header=setUpTableauInShiny(),
-  title = "Melbourne Travel Guide",
+  title = div(
+    class = "weather-box",
+    uiOutput("weatherIconUI"),
+    textOutput("weatherDescription"),
+    textOutput("weatherTemp"),
+    div(class = "location", "Melbourne")
+  ),
+  id = "mynav",
+  header = setUpTableauInShiny(),
+  position = "fixed-top",
   tags$head(
     tags$script(src = "https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"),
     tags$link(href = "https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css", rel = "stylesheet"),
+    tags$link(href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css", rel = "stylesheet"),
+    tags$link(href = "https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap", rel = "stylesheet"),
     tags$style(HTML("
       .navbar {
         background-color: #0572e1;
@@ -44,137 +57,85 @@ ui <- navbarPage(
         color: #FFFFFF;
         font-size: 16px boil;
       }
+      .tabpanel {
+        padding: 0;
+      }
       .weather-box {
-        border: 1px solid #ccc;
-        border-radius: 10px;
+        position: absolute;
+        top:0;
+        right: 0;
+        padding: 0;
+        border: none;
         text-align: center;
-        width: 100%;
-        margin-bottom: 10px;
-        background-color: #d9d8d9;
+        width: 250px;
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        font-size: 12px;
+        color: white;
+        font-family:font-family: 'Poppins', sans-serif;
       }
-      #weatherIconUI {
-        font-size: 40px;
+      #weatherDescription{
+        padding: 0 5px;
       }
-      #weatherTemp {
-        font-size: 24px;
-        margin-top: 10px;
-        margin-bottom: 10px;
+      #weatherTemp{
+        padding: 0 5px;
       }
-      #weatherDescription {
-        font-size: 16px;
+      #location{
+        padding: 0 5px;
       }
-
-      .location {
-        font-size: 14px;
-      }
-    ")
-  )),
-  tabPanel("Real Time Map",
-    fluidRow(
-      column(2, 
-        div(class = "weather-box",
-          uiOutput("weatherIconUI"),
-          textOutput("weatherTemp"),
-          textOutput("weatherDescription"),
-          div(class = "location", "Melbourne")
-        ),
-        div(class="weather-box","Show something get from Mapbox")
-      ),
-      column(10,
-        tags$div(id = "mapboxContainer", style = "width: 100%; height: 700px;"),
-        tags$script(HTML("
-          mapboxgl.accessToken = 'pk.eyJ1IjoicmFuY2hlbiIsImEiOiJjbG5xemdmMm4weG1uMmpwZG0zMmFseWkyIn0.59mv2UvALzSr3S1I-YEX_A';
-          var map = new mapboxgl.Map({
-            container: 'mapboxContainer',
-            style: 'mapbox://styles/ranchen/clnpxlat800up01pvemzqe4z3',
-            center: [144.9631, -37.8136], 
-            zoom: 10
-          });
-          map.on('click', (event) => {
-          const features = map.queryRenderedFeatures(event.point, {
-            layers: ['bus-stops-d5w82d']
-          });
-          if (!features.length) {
-            return;
-          }
-          const feature = features[0];
-          const popup = new mapboxgl.Popup({ offset: [0, -15] })
-          .setLngLat(feature.geometry.coordinates)
-          .setHTML(
-          `<h3>${feature.properties.title}</h3><p>${feature.properties.description}</p>`
-          )
-          .addTo(map);
-          });
-        "))
-      )
+    "))
+  ),
+  tabPanel(
+    "Home",
+    class = "tabpanel",
+    includeHTML("home.html")
+  ),
+  tabPanel(
+    "Map",
+    class = "tabpanel",
+    includeHTML("map.html")
+  ),
+  tabPanel(
+    "Historical Data",
+    class = "tabpanel",
+    tableauPublicViz(
+      id = "tableauViz",
+      url = "https://public.tableau.com/views/SampleTableauembedforShinyintegrationlab/Hospitalstreemap",
+      width = "100%",
+      height = "700px"
     )
   ),
-  
-  tabPanel("Historical Data",
-    tableauPublicViz(
-      id='tableauViz',       
-      url='https://public.tableau.com/views/SampleTableauembedforShinyintegrationlab/Hospitalstreemap',
-      width='100%',
-      height='700px'
-    )
-  )
 )
 
 
 server <- function(input, output, session) {
   weather_data <- reactivePoll(600000, session,
-  checkFunc = function() {
-    Sys.time()
-  },
-  valueFunc = function() {
-    getWeatherData()
-  }
+    checkFunc = function() {
+      Sys.time()
+    },
+    valueFunc = function() {
+      getWeatherData()
+    }
   )
-  
+  observeEvent(input$mynav, {
+    runjs('dispatchEvent(new Event("resize"))')
+  })
+
   output$weatherTemp <- renderText({
     paste0(weather_data()$temperature, "°C")
   })
-  
+
   output$weatherDescription <- renderText({
     weather_data()$description
   })
-  
+
   output$weatherIconUI <- renderUI({
     icon_code <- weather_data()$icon
-    icon_url <- paste0("https://openweathermap.org/img/wn/",icon_code,"@2x.png")
-    tags$img(src = icon_url, alt = "Weather icon", class = "weather-icon")
+    icon_url <- paste0("https://openweathermap.org/img/wn/", icon_code, "@2x.png")
+    tags$img(src = icon_url, alt = "Weather icon", class = "weather-icon", style = "height: 50px;")
   })
-  
 }
 
-shinyApp(ui, server,options = list(launch.browser=TRUE))
-
-
-
-[
-  {
-    "id": "bus-stops-d5w82d",
-    "type": "symbol",
-    "paint": {},
-    "layout": {
-      "icon-image": "bus",
-      "icon-size": 0.8
-    },
-    "source": "composite",
-    "source-layer": "bus-stops-d5w82d"
-  }
-]
-
-[
-  {
-    "id": "city-circle-tram-stops-9r4r64",
-    "type": "symbol",
-    "paint": {},
-    "layout": {
-      "icon-image": "rail",
-      "icon-size": 0.8
-    },
-    "source": "composite",
-    "source-layer": "city-circle-tram-stops-9r4r64"
-  }
-]
+shinyApp(ui, server, options = list(launch.browser = TRUE))
