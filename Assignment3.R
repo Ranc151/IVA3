@@ -32,6 +32,7 @@ getWeatherData <- function() {
 ui <- navbarPage(
   title = div(
     class = "weather-box",
+    textOutput("currentDateTime"),
     uiOutput("weatherIconUI"),
     textOutput("weatherDescription"),
     textOutput("weatherTemp"),
@@ -45,6 +46,7 @@ ui <- navbarPage(
     tags$link(href = "https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css", rel = "stylesheet"),
     tags$link(href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css", rel = "stylesheet"),
     tags$link(href = "https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap", rel = "stylesheet"),
+    tags$link(href = " https://cdn.bootcdn.net/ajax/libs/pretty-checkbox/3.0.3/pretty-checkbox.css", rel = "stylesheet"),
     tags$style(HTML("
       .navbar {
         background-color: #0572e1;
@@ -67,14 +69,14 @@ ui <- navbarPage(
         padding: 0;
         border: none;
         text-align: center;
-        width: 250px;
+        width: 300px;
         height: 100%;
         display: flex;
         flex-direction: row;
         align-items: center;
         font-size: 12px;
         color: white;
-        font-family:font-family: 'Poppins', sans-serif;
+        font-family: 'Poppins', sans-serif;
       }
       #weatherDescription{
         padding: 0 5px;
@@ -98,7 +100,7 @@ ui <- navbarPage(
     includeHTML("map.html")
   ),
   tabPanel(
-    "Historical Data",
+    "Charts",
     class = "tabpanel",
     tableauPublicViz(
       id = "tableauViz",
@@ -111,6 +113,17 @@ ui <- navbarPage(
 
 
 server <- function(input, output, session) {
+  output$currentDateTime <- renderText({
+    currentDateTime <- Sys.time()
+    format(currentDateTime, "%Y-%m-%d %H:%M")
+  })
+
+  autoInvalidate <- reactiveTimer(60 * 1000)
+
+  observe({
+    autoInvalidate()
+  })
+
   weather_data <- reactivePoll(600000, session,
     checkFunc = function() {
       Sys.time()

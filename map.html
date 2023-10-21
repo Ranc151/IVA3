@@ -15,7 +15,7 @@
 
     #layerSidebar,
     #functionSidebar,
-    #typeSidebar {
+    #controlSidebar {
         position: fixed;
         top: 100px;
         height: auto;
@@ -43,26 +43,33 @@
 
     #controlSidebar {
         left: 3vw;
-        padding-left: 100px;
+        margin-left: 110px;
         z-index: 2;
         display: flex;
         flex-direction: column;
-        top: 180px;
+        top: 100px;
         background-color: #fff;
         font-family: 'Poppins', sans-serif;
         text-align: center;
+        color: #515151;
         align-items: center;
-        width: 100px;
+        width: 250px;
         height: auto;
+        border-radius: 20px;
+        padding: 0 5px;
 
     }
 
+    #layerIcon,
     #typeSidebar {
-        left: 3vw;
-        padding-left: 70px;
         z-index: 4;
         flex-direction: row;
-        top: 180px;
+        display: none;
+        position: relative;
+
+    }
+
+    #layerIcon {
         display: flex;
     }
 
@@ -105,26 +112,83 @@
         margin: 0 20px;
     }
 
+    #layerIcon .function .icon {
+        margin: 0 3px;
+    }
+
+    #typeSidebar .function .icon {
+        margin: 0 3px;
+    }
+
     #mapboxContainer .function .icon i {
         font-size: 25px;
         line-height: 60px;
         transition: all 0.3s ease-out;
     }
 
-    #typeSidebar .function {
+    #funcntionName {
+        text-align: center;
+        position: relative;
+        font: 18px bold;
+        margin-top: 5px;
+    }
+
+    #typeLine,
+    #minsLine {
+        text-align: justify;
+        padding: 5px;
+        font: 12px bold;
+        height: auto;
+        margin: 0;
+    }
+
+    #minsSidebar {
+        display: none;
+        align-items: center;
+        margin: 0px;
+    }
+
+    #typeLine {
+        padding-bottom: 0;
+    }
+
+    .function {
         width: 40px;
         height: 40px;
         font-size: 16px;
         border-radius: 30px;
-        margin: 5px;
-    }
-
-    #typeSidebar .function .icon {
-        margin: 0 5px;
     }
 
     #mapboxContainer .function:hover .icon i {
         color: #62ff82;
+    }
+
+    #layerForm i {
+        color: #515151;
+    }
+
+    #layerForm input:checked~i,
+    #layerForm input:checked:focus~i {
+        color: #0a9125;
+    }
+
+    #numberInput {
+        width: 80px;
+        height: 30px;
+        margin: 5px;
+        position: relative;
+        border-radius: 5px;
+    }
+
+    #minutes {
+        margin: 0;
+    }
+
+    #lastline {
+        display: none;
+        text-align: center;
+        font: 12px bold;
+        padding: 5px;
     }
 </style>
 
@@ -132,12 +196,24 @@
     <div id="mapbox" style="width: 100%; height: 100vh;"></div>
     <div id="layerSidebar">
         <form id="layerForm">
-            <div><input type="checkbox" name="coffee" value="coffee"><i class="fa-solid fa-mug-hot"></i><br></div>
-            <div><input type="checkbox" name="bar" value="bar"><i class="fa-solid fa-martini-glass"></i><br></div>
-            <div><input type="checkbox" name="bus" value="bus"><i class="fa-solid fa-bus"></i><br></div>
-            <div><input type="checkbox" name="train" value="train"><i class="fa-solid fa-train"></i><br></div>
-            <div><input type="checkbox" name="tram" value="tram"><i class="fa-solid fa-train-tram"></i><br></div>
-            <div><input type="checkbox" name="park" value="park"><i class="fa-solid fa-square-parking"></i><br>
+            <div class="pretty p-switch p-fill">
+                <input type="checkbox" name="poi-label" value="visible" checked><i class="fa-solid fa-landmark"></i><br>
+            </div>
+            <div class="pretty p-switch p-fill"><input type="checkbox" name="data-driven-lines" value="none"><i
+                    class="fa-solid fa-road"></i><br>
+            </div>
+            <div class="pretty p-switch p-fill"><input type="checkbox" name="bus" value="none"><i
+                    class="fa-solid fa-bus"></i><br>
+            </div>
+            <div class="pretty p-switch p-fill"><input type="checkbox" name="train" value="none"><i
+                    class="fa-solid fa-train"></i><br>
+            </div>
+            <div class="pretty p-switch p-fill"><input type="checkbox" name="tram" value="none"><i
+                    class="fa-solid fa-train-tram"></i><br></div>
+            <div class="pretty p-switch p-fill"><input type="checkbox" name="bike" value="none"><i
+                    class="fa-solid fa-bicycle"></i><br></div>
+            <div class="pretty p-switch p-fill"></i><input type="checkbox" name="parking" value="none"><i
+                    class="fa-solid fa-square-parking"></i><br>
             </div>
         </form>
     </div>
@@ -156,15 +232,15 @@
         </div>
     </div>
     <div id="controlSidebar">
-        <div id="funcntionName"></div>
-        <div id="typeLine"></div>
+        <div id="funcntionName"> Free Browse Model </div>
+        <div id="typeLine"> You can click on any point you want to see more information on following layers </div>
         <div id="typeSidebar">
             <div class="function" onclick="TypeChange(1)">
                 <div id="driving" class="icon"><i class="fa-solid fa-car"></i></div>
                 <!-- <div>Drive</div> -->
             </div>
             <div class="function" onclick="TypeChange(2)">
-                <div id="cycling" class="icon"><i class="fa-solid fa-bicycle"></i>></div>
+                <div id="cycling" class="icon"><i class="fa-solid fa-bicycle"></i></div>
                 <!-- <div>Bicycle</div> -->
             </div>
             <div class="function" onclick="TypeChange(3)">
@@ -172,12 +248,24 @@
                 <!-- <div>Walking</div> -->
             </div>
         </div>
-        <div id="minsLine"></div>
-        <div id="minsSidebar">
-
+        <div id="layerIcon">
+            <div class="function">
+                <div class="icon"><i class="fa-solid fa-landmark"></i></div>
+            </div>
+            <div class="function">
+                <div class="icon"><i class="fa-solid fa-bicycle"></i></div>
+            </div>
+            <div class="function">
+                <div class="icon"><i class="fa-solid fa-square-parking"></i></div>
+            </div>
         </div>
+        <div id="minsLine"> Note: You can switch the display layer through the upper right corner </div>
+        <div id="minsSidebar">
+            <label for="numberInput" id="minutes"> Minutes: </label>
+            <input type="number" id="numberInput" name="numberInput" min="1" max="60" value="10">
+        </div>
+        <div id="lastline"> Now click a point and see where you can arrive!</div>
     </div>
-
 </div>
 
 <script>
@@ -195,10 +283,34 @@
 
     map.setMaxBounds(bounds);
 
+    var form = document.getElementById('layerForm');
+    form.addEventListener('change', function (event) {
+        if (event.target.type === 'checkbox') {
+            var layerId = event.target.name;
+            var visibility = event.target.checked ? 'visible' : 'none';
+            if (layerId === "bus") {
+                map.setLayoutProperty("bus-stops", 'visibility', visibility);
+                map.setLayoutProperty("bus-routes", 'visibility', visibility);
+            } else if (layerId === "tram") {
+                map.setLayoutProperty("tram-stops", 'visibility', visibility);
+                map.setLayoutProperty("tram-routes", 'visibility', visibility);
+            } else if (layerId === "train") {
+                map.setLayoutProperty("train-stations", 'visibility', visibility);
+                map.setLayoutProperty("tram-track", 'visibility', visibility);
+            } else {
+                map.setLayoutProperty(layerId, 'visibility', visibility);
+            }
+        }
+    });
+
+
     let currentFunction = "Point";
     let currentType = "driving";
     var typeBar = document.querySelector("#typeSidebar");
-    var popup;
+    var layIcon = document.querySelector("#layerIcon");
+    var minLine = document.querySelector("#minsSidebar");
+    var lastLineDiv = document.querySelector("#lastline");
+    const numberInput = document.getElementById("numberInput");
 
     function FunctionChange(num) {
         const ToRemove = ['startPoint', 'endPoint', 'route', 'iso'];
@@ -212,17 +324,41 @@
                 map.removeSource(sourceName);
             }
         });
-        popup.remove();
+        if (typeof popup !== 'undefined' && popup.isOpen()) {
+            pop.remove();
+        }
+        var funName = document.getElementById("funcntionName");
+        var tLine = document.getElementById("typeLine");
+        var mLine = document.getElementById("minsLine");
         marker.remove();
         if (num === 1) {
             currentFunction = "Point";
             typeBar.style.display = "none";
+            layIcon.style.display = "flex";
+            minLine.style.display = "none";
+            lastLineDiv.style.display = "none";
+            funName.textContent = "Free Browse Model";
+            tLine.textContent = " You can click on any point you want to see more information on following layers ";
+            mLine.textContent = " Note: You can switch the display layer through the upper right corner ";
+
         } else if (num === 2) {
             currentFunction = "Route";
             typeBar.style.display = "flex";
+            layIcon.style.display = "none";
+            minLine.style.display = "none";
+            lastLineDiv.style.display = "none";
+            funName.textContent = "Route Plan Model";
+            tLine.textContent = " Please use your travel mode: ";
+            mLine.textContent = " Now you get the route by clicking any two points on the map ";
         } else if (num === 3) {
             currentFunction = "Isochrone";
             typeBar.style.display = "flex";
+            layIcon.style.display = "none";
+            minLine.style.display = "flex";
+            lastLineDiv.style.display = "flex";
+            funName.textContent = "Get Ischrone range";
+            tLine.textContent = " Please use your travel mode: ";
+            mLine.textContent = " Please input your estimated travel time:";
         }
     }
 
@@ -243,7 +379,6 @@
         );
         const json = await query.json();
         const data = json.routes[0];
-        console.log(data);
         const route = data.geometry.coordinates;
         const geojson = {
             type: 'Feature',
@@ -273,12 +408,26 @@
         });
     }
 
-
-    // 等时线的参数
     const urlBase = 'https://api.mapbox.com/isochrone/v1/mapbox/';
     let minutes = 10;
     const marker = new mapboxgl.Marker({
         'color': '#314ccd'
+    });
+
+    numberInput.addEventListener("input", function () {
+        const minValue = parseInt(numberInput.min, 10);
+        const maxValue = parseInt(numberInput.max, 10);
+        let newValue = parseInt(numberInput.value, 10);
+
+        if (newValue < minValue) {
+            newValue = minValue;
+        } else if (newValue > maxValue) {
+            newValue = maxValue;
+        }
+
+        numberInput.value = newValue;
+
+        minutes = numberInput.value;
     });
 
     async function getIso(coordinates) {
@@ -298,19 +447,30 @@
         marker.remove();
         if (currentFunction === "Point") {
             const features = map.queryRenderedFeatures(event.point, {
-                layers: ['poi-label', 'parking']
+                layers: ['poi-label', 'bike', 'parking']
             });
             if (!features.length) {
                 return;
             }
+            // features.forEach(function (temp) {
+            //     var name = temp.properties.name;  // 替换'name'为实际属性名称
+            //     var otherParameter = temp.properties.rental_method;  // 替换'otherParameter'为其他属性名称
+
+            //     // 在这里使用 name 和 otherParameter
+            //     console.log('Name: ' + name);
+            //     console.log('Other Parameter: ' + otherParameter);
+            // });
             const feature = features[0];
+            console.log(feature);
             const coordinates = feature.geometry.coordinates;
-            popup = new mapboxgl.Popup({ offset: [0, -10] })
-                .setLngLat(coordinates)
-                .setHTML(
-                    `<h3>${feature.properties.title}</h3><p>${feature.properties.description}</p>`
-                )
-                .addTo(map);
+            if (feature.layer.id === "bike") {
+                var popup = new mapboxgl.Popup({ offset: [0, -10] })
+                    .setLngLat(coordinates)
+                    .setHTML(
+                        `<p><b>Name: ${feature.properties.name}</b></p><p>Rental method: ${feature.properties.rental_method}</p>`
+                    )
+                    .addTo(map);
+            }
             marker.setLngLat(coordinates).addTo(map);
         } else if (currentFunction === "Route") {
             const coordinates = Object.keys(event.lngLat).map((key) => event.lngLat[key]);
@@ -340,8 +500,6 @@
                     }
                 });
                 const startPointcoord = (map.querySourceFeatures('startPoint'))[0].geometry.coordinates;
-                console.log(startPointcoord);
-                console.log(startPointcoord);
                 getRoute(startPointcoord, coordinates);
             } else if (!map.getLayer('startPoint')) {
                 map.addLayer({
