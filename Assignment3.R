@@ -7,6 +7,11 @@ library(mapboxapi)
 library(shinyBS)
 library(shinyjs)
 library(shinydashboard)
+library(ggplot2)
+library(ggiraph)
+library(tidyr)
+library(dplyr)
+library(stringr)
 source("tableau-in-shiny-v1.0.R")
 
 weather_API <- "b013907dbac70d244667999a00a73f26"
@@ -61,6 +66,10 @@ ui <- navbarPage(
       }
       .tabpanel {
         padding: 0;
+      }
+      .tabpanel-tableau{
+        padding: 0;
+        padding-top: 25px;
       }
       .weather-box {
         position: absolute;
@@ -125,6 +134,10 @@ ui <- navbarPage(
     .tab-button i {
         padding: 3px;
     }
+    .my-vertical-layout .shiny-output-error {
+               margin-top: 0px;
+               margin-bottom: 0px;
+             }
 
       .tab-button button {
         height: 5vh;
@@ -218,13 +231,17 @@ ui <- navbarPage(
   ),
   tabPanel(
     "Charts",
-    class = "tabpanel",
-    tableauPublicViz(
-      id = "tableauViz",
-      url = "https://public.tableau.com/views/melbournetraffic_16978952152700/Story1?:language=zh-CN&publish=yes&:display_count=n&:origin=viz_share_link",
-      width = "100%",
-      height = "700px"
-    )
+    class = "tabpanel-tableau",
+    verticalLayout(
+      class = "my-vertical-layout",
+      tableauPublicViz(
+        id = "tableauViz",
+        url = 'https://public.tableau.com/shared/Y5WTJZMMD?:display_count=n&:origin=viz_share_link',
+        width = "100%",
+        height = "100%"
+      ),
+      girafeOutput('tableau_choce_data')
+    ),
   ),
 )
 
@@ -266,6 +283,22 @@ server <- function(input, output, session) {
     icon_code <- weather_data()$icon
     icon_url <- paste0("https://openweathermap.org/img/wn/", icon_code, "@2x.png")
     tags$img(src = icon_url, alt = "Weather icon", class = "weather-icon", style = "height: 50px;")
+  })
+
+  output$tableau_choce_data <- renderGirafe({
+    # Find the name of the hospital clicked by the user
+    df <- input$tableauViz_mark_selection_changed
+    
+    df <- df[, c(2, 3)]
+    df <- df %>% rename(Trucks = names(df)[2])
+    df <- df %>%
+      mutate(Label = str_replace(Label, ".* (?=.* )", ""))
+    p <- ggplot(df, aes(x = Label , y = Trucks)) +
+      geom_bar(stat = "identity", fill = "lightblue") +
+      coord_flip() + # 
+      labs(x = "Area", y = "Traffic Volume", title = "Traffic Volume by Area") +
+      theme_minimal()
+    girafe(ggobj = p)
   })
 }
 
