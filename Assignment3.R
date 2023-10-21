@@ -36,7 +36,7 @@ ui <- navbarPage(
     uiOutput("weatherIconUI"),
     textOutput("weatherDescription"),
     textOutput("weatherTemp"),
-    div(class = "location", "Melbourne")
+    div(id = "location", "Melbourne")
   ),
   id = "mynav",
   header = setUpTableauInShiny(),
@@ -87,12 +87,129 @@ ui <- navbarPage(
       #location{
         padding: 0 5px;
       }
+      #home {
+        margin: 0;
+        padding-top: 50px;
+        width: auto;
+        height: 100vh;
+        background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(./background.png);
+        background-size: cover;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #header {
+        animation-name: animate__lightSpeedInLeft;
+        animation-duration: 2s;
+        text-align: center;
+        font: 3.5em sans-serif;
+        color: aliceblue;
+      }
+
+      #home p {
+        padding: 2vh;
+        font: 1em;
+        color: azure;
+        text-align: center;
+      }
+
+      .tab-button {
+        width: 50%;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-gap: 20px;
+      }
+
+    .tab-button i {
+        padding: 3px;
+    }
+
+      .tab-button button {
+        height: 5vh;
+        text-align: center;
+        background: linear-gradient(to right, #cde6f1, #f0d8e6, #f5efbf, #95d9f9);
+        background-size: 400%;
+        border-radius: 10px;
+        border: none;
+        outline: none;
+        z-index: 1;
+        padding: 0;
+      }
+
+      .tab-button button::before {
+        text-align: center;
+        background: linear-gradient(to right, #03a9f4, #f441a5, #ffeb3b, #09a8f4);
+        background-size: 400%;
+        border-radius: 10px;
+        z-index: -1;
+        filter: blur(20px);
+      }
+
+      .tab-button button:hover {
+        animation: streamer 4s infinite;
+      }
+
+      .tab-button button:hover::before {
+        animation: streamer 8s infinite;
+      }
+
+      @keyframes streamer {
+        100% {
+            background-position: -400% 0;
+        }
+      }
+
+      @keyframes animate__lightSpeedInLeft {
+        0% {
+            transform: translate3d(-100%, 0, 0) skewX(-30deg);
+            opacity: 0;
+        }
+
+        60% {
+            transform: skewX(20deg);
+            opacity: 1;
+        }
+
+        80% {
+            transform: skewX(-5deg);
+            opacity: 1;
+        }
+
+        100% {
+            transform: none;
+            opacity: 1;
+        }
+      }
     "))
   ),
   tabPanel(
     "Home",
     class = "tabpanel",
-    includeHTML("home.html")
+    div(
+      id = "home",
+      div(
+        h1(
+          "MELBOURNE TOUR MAP",
+          id = "header"
+        ),
+        p("Welcome to Melbourne Tour Map."),
+      ),
+      div(
+        class = "tab-button",
+        actionButton("mapIcon",
+          id = "mapIcon",
+          label = "Explore Melbourne Map", icon("map", lib = "font-awesome"),
+          style = "color: #07ab0a;", onclick = "$('li:eq(2) a').tab('show');"
+        ),
+        actionButton("chartIcon",
+          id = "chartIcon",
+          label = "Analyse Data", icon("chart-simple", lib = "font-awesome"),
+          style = "color: #c963ee;", onclick = "$('li:eq(3) a').tab('show');"
+        )
+      )
+    ),
   ),
   tabPanel(
     "Map",
@@ -104,7 +221,7 @@ ui <- navbarPage(
     class = "tabpanel",
     tableauPublicViz(
       id = "tableauViz",
-      url = "https://public.tableau.com/views/SampleTableauembedforShinyintegrationlab/Hospitalstreemap",
+      url = "https://public.tableau.com/views/melbournetraffic_16978952152700/Story1?:language=zh-CN&publish=yes&:display_count=n&:origin=viz_share_link",
       width = "100%",
       height = "700px"
     )
@@ -113,17 +230,6 @@ ui <- navbarPage(
 
 
 server <- function(input, output, session) {
-  output$currentDateTime <- renderText({
-    currentDateTime <- Sys.time()
-    format(currentDateTime, "%Y-%m-%d %H:%M")
-  })
-
-  autoInvalidate <- reactiveTimer(60 * 1000)
-
-  observe({
-    autoInvalidate()
-  })
-
   weather_data <- reactivePoll(600000, session,
     checkFunc = function() {
       Sys.time()
@@ -132,6 +238,18 @@ server <- function(input, output, session) {
       getWeatherData()
     }
   )
+
+  autoInvalidate <- reactiveTimer(1000)
+
+  currentTime <- reactive({
+    autoInvalidate()
+    Sys.time()
+  })
+
+  output$currentDateTime <- renderText({
+    format(currentTime(), "%Y-%m-%d %H:%M:%S")
+  })
+
   observeEvent(input$mynav, {
     runjs('dispatchEvent(new Event("resize"))')
   })
