@@ -170,6 +170,7 @@
     #layerForm input:checked~i,
     #layerForm input:checked:focus~i {
         color: #0a9125;
+        background: linear-gradient(to right, #cde6f1, #f0d8e6, #f5efbf, #95d9f9);
     }
 
     #numberInput {
@@ -440,6 +441,10 @@
         map.getSource('iso').setData(data);
     }
 
+    var ff = map.querySourceFeatures('poi-label');
+    console.log(ff);
+
+
     map.on('click', (event) => {
         if (map.getLayer('iso')) {
             map.removeLayer('iso');
@@ -452,22 +457,32 @@
             if (!features.length) {
                 return;
             }
-            // features.forEach(function (temp) {
-            //     var name = temp.properties.name;  // 替换'name'为实际属性名称
-            //     var otherParameter = temp.properties.rental_method;  // 替换'otherParameter'为其他属性名称
-
-            //     // 在这里使用 name 和 otherParameter
-            //     console.log('Name: ' + name);
-            //     console.log('Other Parameter: ' + otherParameter);
-            // });
+            var poi = map.get
             const feature = features[0];
             console.log(feature);
             const coordinates = feature.geometry.coordinates;
-            if (feature.layer.id === "bike") {
+            if (feature.layer.id === "parking") {
+                var popup = new mapboxgl.Popup({ offset: [0, -10] })
+                    .setLngLat(coordinates)
+                    .setHTML(
+                        `<p><b>Zone Number: ${feature.properties.Zone_Number} ${feature.properties.Restriction_Display}</b></p><p>Restriction Days: ${feature.properties.Restriction_Days
+                        }</p><p>Time Restrictions: ${feature.properties.Time_Restrictions_Start
+                        } - ${feature.properties.Time_Restrictions_Finish
+                        } </p>`
+                    )
+                    .addTo(map);
+            } else if (feature.layer.id === "bike") {
                 var popup = new mapboxgl.Popup({ offset: [0, -10] })
                     .setLngLat(coordinates)
                     .setHTML(
                         `<p><b>Name: ${feature.properties.name}</b></p><p>Rental method: ${feature.properties.rental_method}</p>`
+                    )
+                    .addTo(map);
+            } else if (feature.layer.id === "poi-label") {
+                var popup = new mapboxgl.Popup({ offset: [0, -10] })
+                    .setLngLat(coordinates)
+                    .setHTML(
+                        `<p><b>Name: ${feature.properties.name}</b></p><p>Category: ${feature.properties.category_en}</p><p>Class: ${feature.properties.class}</p>`
                     )
                     .addTo(map);
             }
