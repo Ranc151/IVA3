@@ -231,13 +231,13 @@ ui <- navbarPage(
       tableauPublicViz(
         id = "tableauViz1",
         url = 'https://public.tableau.com/views/melbournetraffic_16978952152700/Dashboard1?:language=en-US&publish=yes&:display_count=n&:origin=viz_share_link',
-        width = "100%",
+        width = "90vw",
         height = "100%"
       ),
       splitLayout(
         tableauPublicViz(
           id = "tableauViz",
-          url = 'https://public.tableau.com/views/melbournetraffic_16978952152700/TrafficVolume?:language=en-US&publish=yes&:display_count=n&:origin=viz_share_link',
+          url = 'https://public.tableau.com/views/melbournetraffic_16978952152700/Dashboard3?:language=en-US&publish=yes&:display_count=n&:origin=viz_share_link',
           width = "100%",
           height = "100%"
         ),
